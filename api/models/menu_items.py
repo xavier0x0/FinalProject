@@ -13,3 +13,4 @@ class MenuItem(Base):
     name = Column(String(100))
     description = Column(String(300))
     recipe_id = Column(Integer, ForeignKey("recipes.id"))
+    ingredients = Column(String(1000))

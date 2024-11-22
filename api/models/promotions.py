@@ -8,6 +8,7 @@ class Promotion(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     menu_item_id = Column(Integer, ForeignKey("menu_items.id"))
     menu_item = relationship("MenuItem", back_populates="promotions")
+    promo_code = Column(String(20))
     description = Column(String(300))
     start_date = Column(DATETIME)
     end_date = Column(DATETIME)
