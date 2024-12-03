@@ -15,6 +15,7 @@ class Order(Base):
     tracking_number = Column(Integer, nullable=True) # Optional
     status = Column(String(10), nullable=True, server_default="Pending") # Default to "Pending"
     total_price = Column(DECIMAL(5,2), nullable=True)
+    order_type = Column(String(20), nullable=False) # Field for takeout/delivery
 
     customer = relationship("Customer", back_populates="orders")
     order_details = relationship("OrderDetail", back_populates="order")

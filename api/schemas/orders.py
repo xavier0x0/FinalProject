@@ -1,14 +1,24 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from .order_details import OrderDetail
 
 
 
 class OrderBase(BaseModel):
-    customer_name: str
+    customer_name: Optional[str] = None
     description: Optional[str] = None
+    total_price: Optional[float] = None
+    order_type: str = Field(..., description="Order type, Takeout or Delivery") # Field for takeout/delivery preference
 
+    # Validator to ensure valid order types
+    @field_validator("order_type")
+    @classmethod
+    def validate_order_type(cls, v):
+        allowed_types = ["Takeout", "Delievery"]
+        if v not in allowed_types:
+            raise ValueError(f"Invalid order type. Must be one of: {', '.join(allowed_types)}")
+        return v
 
 class OrderCreate(OrderBase):
     pass

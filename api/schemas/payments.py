@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from typing import Optional
 
@@ -9,10 +9,11 @@ class PaymentBase(BaseModel):
     expiration_date: str = Field(..., regex=r"^(0[1-9]|1[0-2])\/\d{2}$")  # MM/YY format
     billing_address: str = Field(..., max_length=400)
     amount: float = Field(..., gt=0)  # Must be greater than 0
-    payment_date: Optional[datetime] = Field(default_factory=datetime.utcnow)  # Default to current time
+    payment_date: Optional[datetime] = Field(default_factory=datetime.current)  # Default to current time
 
     # Custom validator to ensure card_number is numeric
-    @validator("card_number")
+    @field_validator("card_number")
+    @classmethod
     def validate_card_number(cls, v):
         if not v.isdigit():
             raise ValueError("Card number must contain only digits.")
