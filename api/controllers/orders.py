@@ -5,8 +5,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..models import resources as Resource, sandwiches as Sandwich
 from ..schemas import orders as schema
 from datetime import datetime
-
-
+#error here? needed for calc revenue by  IDK what to set this as
+from ..models import menu_items as models
+from sqlalchemy.sql import func
 
 
 def create(db: Session, request: schema.OrderCreate):
@@ -141,3 +142,17 @@ def get_status_by_tracking_number(db: Session, tracking_number: int):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Database error: {error}"
         )
+
+def calculate_revenue_by_date(db: Session, date: datetime):
+    try:
+        # Query to calculate total revenue for the given day
+        total_revenue = db.query(func.sum(models.OrderDetail.amount * models.MenuItem.price))\
+                          .join(models.MenuItem, models.OrderDetail.sandwich_id == models.MenuItem.id)\
+                          .join(models.Order, models.OrderDetail.order_id == models.Order.id)\
+                          .filter(func.date(models.Order.order_date) == date.date())\
+                          .scalar()
+
+        return {"total_revenue": total_revenue or 0.0}  # Return 0 if no revenue found
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error calculating revenue: {str(e)}")

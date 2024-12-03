@@ -9,6 +9,7 @@ router = APIRouter(
     prefix="/promocodes",
 )
 
+# specfic format for dates: 2024-12-03T12:00:00
 @router.post("/", response_model=schema.PromoCode)
 def create_promo_code(request: schema.PromoCodeCreate, db: Session = Depends(get_db)):
     return controller.create_promo_code(db=db, request=request)

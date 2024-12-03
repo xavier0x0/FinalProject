@@ -4,6 +4,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from ..models import promo_codes as models
 from ..schemas import promo_codes as schema
+from sqlalchemy.sql.expression import literal
+
 
 # Create a new promo code
 def create_promo_code(db: Session, request: schema.PromoCodeCreate):
@@ -29,7 +31,7 @@ def create_promo_code(db: Session, request: schema.PromoCodeCreate):
 
 # Delete a promo code
 def delete_promo_code(db: Session, promo_id: int):
-    promo = db.query(models.PromoCode).filter(models.PromoCode.id == promo_id).first()
+    promo = db.query(models.PromoCode).filter(models.PromoCode.id == literal(promo_id)).first()
     if not promo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -48,7 +50,10 @@ def delete_promo_code(db: Session, promo_id: int):
 
 # Validate and apply a promo code
 def apply_promo_code(db: Session, code: str, total_amount: float):
-    promo = db.query(models.PromoCode).filter(models.PromoCode.code == code, models.PromoCode.is_active == True).first()
+    promo = db.query(models.PromoCode).filter(
+        models.PromoCode.code == literal(code),
+        models.PromoCode.is_active == literal(True)
+    ).first()
     if not promo:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
