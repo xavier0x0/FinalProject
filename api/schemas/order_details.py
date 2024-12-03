@@ -11,6 +11,8 @@ class OrderDetailBase(BaseModel):
 class OrderDetailCreate(OrderDetailBase):
     order_id: int
     sandwich_id: int
+    customer_name: Optional[str] = None # Optional for anonymous orders
+    customer_phone: Optional[str] = None # Optional for contact information
 
 class OrderDetailUpdate(BaseModel):
     order_id: Optional[int] = None
