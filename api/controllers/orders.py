@@ -2,23 +2,36 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response, Depends
 from ..models import orders as model
 from sqlalchemy.exc import SQLAlchemyError
+from ..models import resources as Resource, sandwiches as Sandwich
+from ..schemas import order_details as schema
 
 
-def create(db: Session, request):
-    new_item = model.Order(
+
+def create(db: Session, request: schema.OrderDetailCreate):
+    # Validate ingredient availability
+    validate_ingredients(db=db, sandwich_id=request.sandwich_id, order_amount=request.amount)
+
+    # Deduct ingredients
+    sandwich = db.query(Sandwich).filter(Sandwich.id == request.sandwich_id).first()
+    for recipe_item in sandwich.recipes:
+        resource = db.query(Resource).filter(Resource.id == recipe_item.resource_id).first()
+        resource.amount -= recipe_item.amount * request.amount
+        db.commit()
+
+    # Create the order
+    new_order = model.Order(
         customer_name=request.customer_name,
         description=request.description
     )
-
     try:
-        db.add(new_item)
+        db.add(new_order)
         db.commit()
-        db.refresh(new_item)
+        db.refresh(new_order)
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
 
-    return new_item
+    return new_order
 
 
 def read_all(db: Session):
@@ -66,3 +79,22 @@ def delete(db: Session, item_id):
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def validate_ingredients(db: Session, sandwich_id: int, order_amount: int):
+    # Fetch the sandwich details
+    sandwich = db.query(Sandwich).filter(Sandwich.id == sandwich_id).first()
+    if not sandwich:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sandwich not found!")
+
+    # Validate each ingredient's availability
+    for recipe_item in sandwich.recipes:
+        resource = db.query(Resource).filter(Resource.id == recipe_item.resource_id).first()
+        if not resource:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ingredient {recipe_item.name} not found!")
+
+        if resource.amount < recipe_item.amount * order_amount:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Insufficient {resource.item} to fulfill the order!"
+            )
