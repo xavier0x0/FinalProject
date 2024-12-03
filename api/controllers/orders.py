@@ -117,3 +117,27 @@ def validate_ingredients(db: Session, sandwich_id: int, order_amount: int):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Insufficient {resource.item} to fulfill the order!"
             )
+        
+def get_status_by_tracking_number(db: Session, tracking_number: int):
+    # Validate tracking number
+    if tracking_number <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid tracking number provided!"
+        )
+    
+    try:
+        # Query the order by tracking number
+        order = db.query(model.Order).filter(model.Order.tracking_number == tracking_number).first()
+        if not order:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Order with this tracking number not found!"
+            )
+        return {"tracking_number": tracking_number, "status": order.status}
+    except SQLAlchemyError as e:
+        error = str(e.__dict__['orig'])
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Database error: {error}"
+        )

@@ -24,6 +24,13 @@ def read_all(db: Session = Depends(get_db)):
 def read_one(item_id: int, db: Session = Depends(get_db)):
     return controller.read_one(db, item_id=item_id)
 
+@router.get("/status/{tracking_number}")
+def track_order_status(tracking_number: int, db: Session = Depends(get_db)):
+    """
+    Track the status of an order by its tracking number.
+    """
+    return controller.get_status_by_tracking_number(db=db, tracking_number=tracking_number)
+
 
 @router.put("/{item_id}", response_model=schema.Order)
 def update(item_id: int, request: schema.OrderUpdate, db: Session = Depends(get_db)):
