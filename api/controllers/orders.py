@@ -3,13 +3,13 @@ from fastapi import HTTPException, status, Response, Depends
 from ..models import orders as model
 from sqlalchemy.exc import SQLAlchemyError
 from ..models import resources as Resource, sandwiches as Sandwich
-from ..schemas import order_details as schema
+from ..schemas import orders as schema
 from datetime import datetime
 
 
 
 
-def create(db: Session, request: schema.OrderDetailCreate):
+def create(db: Session, request: schema.OrderCreate):
     try:
         with db.begin():  # Ensures atomicity
             # Validate ingredient availability
@@ -24,18 +24,30 @@ def create(db: Session, request: schema.OrderDetailCreate):
                 resource = db.query(Resource).filter(Resource.id == recipe_item.resource_id).first()
                 resource.amount -= recipe_item.amount * request.amount
 
+                # Ensure no negative inventory
+                if resource.amount < 0:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Insufficient {resource.item} remaining in inventory!"
+                    )
+
             # Create the order
             new_order = model.Order(
                 customer_name=request.customer_name,  # Optional
                 description=f"{request.amount} x {sandwich.sandwich_name}",  # Order summary
+                total_price=float(sandwich.price) * request.amount,
                 order_date=datetime.now(),  # Automatically set order date
-                total_price=float(sandwich.price) * request.amount  # Calculate total price
+                order_type=request.order_type, # Store order type
+                status="Pending"
             )
             db.add(new_order)
 
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Database error: {error}"
+            )
 
     return new_order
 
