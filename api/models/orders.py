@@ -18,3 +18,4 @@ class Order(Base):
 
     customer = relationship("Customer", back_populates="orders")
     order_details = relationship("OrderDetail", back_populates="order")
+    payment = relationship("Payment", back_populates="order", uselist=False)  # One-to-One relationship
