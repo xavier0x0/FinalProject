@@ -14,4 +14,3 @@ class Recipe(Base):
 
     sandwich = relationship("Sandwich", back_populates="recipes")
     resource = relationship("Resource", back_populates="recipes")
-    recipes = relationship("Recipe", back_populates="sandwich")
