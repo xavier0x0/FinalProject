@@ -4,6 +4,7 @@ from ..controllers import orders as controller
 from ..schemas import orders as schema
 from ..dependencies.database import engine, get_db
 from datetime import date
+from datetime import datetime
 
 router = APIRouter(
     tags=['Orders'],
@@ -45,3 +46,7 @@ def delete(item_id: int, db: Session = Depends(get_db)):
 @router.get("/revenue", response_model=dict)
 def get_revenue_by_date(date: date, db: Session = Depends(get_db)):
     return controller.calculate_revenue_by_date(db=db, date=date)
+
+@router.get("/date-range", response_model=list[schema.Order])
+def get_orders_by_date_range(start_date: datetime, end_date: datetime, db: Session = Depends(get_db)):
+    return controller.get_orders_by_date_range(db=db, start_date=start_date, end_date=end_date)

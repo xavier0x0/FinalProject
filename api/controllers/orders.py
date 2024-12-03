@@ -156,3 +156,16 @@ def calculate_revenue_by_date(db: Session, date: datetime):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calculating revenue: {str(e)}")
+
+def get_orders_by_date_range(db: Session, start_date: datetime, end_date: datetime):
+    try:
+        # Query orders within the date range
+        orders = db.query(models.Order).filter(
+            models.Order.order_date >= start_date,
+            models.Order.order_date <= end_date
+        ).all()
+
+        return orders
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching orders: {str(e)}")

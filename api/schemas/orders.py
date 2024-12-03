@@ -10,6 +10,7 @@ class OrderBase(BaseModel):
     description: Optional[str] = None
     total_price: Optional[float] = None
     order_type: str = Field(..., description="Order type, Takeout or Delivery") # Field for takeout/delivery preference
+    order_date: datetime
 
     # Validator to ensure valid order types
     @field_validator("order_type")
@@ -36,3 +37,5 @@ class Order(OrderBase):
 
     class ConfigDict:
         from_attributes = True
+        #added with 1.8
+        orm_mode = True
