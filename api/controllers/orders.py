@@ -8,25 +8,24 @@ from ..schemas import order_details as schema
 
 
 def create(db: Session, request: schema.OrderDetailCreate):
-    # Validate ingredient availability
-    validate_ingredients(db=db, sandwich_id=request.sandwich_id, order_amount=request.amount)
-
-    # Deduct ingredients
-    sandwich = db.query(Sandwich).filter(Sandwich.id == request.sandwich_id).first()
-    for recipe_item in sandwich.recipes:
-        resource = db.query(Resource).filter(Resource.id == recipe_item.resource_id).first()
-        resource.amount -= recipe_item.amount * request.amount
-        db.commit()
-
-    # Create the order
-    new_order = model.Order(
-        customer_name=request.customer_name,
-        description=request.description
-    )
     try:
-        db.add(new_order)
-        db.commit()
-        db.refresh(new_order)
+        with db.begin():  # Ensures atomicity
+            # Validate ingredient availability
+            validate_ingredients(db=db, sandwich_id=request.sandwich_id, order_amount=request.amount)
+
+            # Deduct ingredients
+            sandwich = db.query(Sandwich).filter(Sandwich.id == request.sandwich_id).first()
+            for recipe_item in sandwich.recipes:
+                resource = db.query(Resource).filter(Resource.id == recipe_item.resource_id).first()
+                resource.amount -= recipe_item.amount * request.amount
+
+            # Create the order
+            new_order = model.Order(
+                customer_name=request.customer_name,
+                description=request.description
+            )
+            db.add(new_order)
+
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
@@ -91,7 +90,7 @@ def validate_ingredients(db: Session, sandwich_id: int, order_amount: int):
     for recipe_item in sandwich.recipes:
         resource = db.query(Resource).filter(Resource.id == recipe_item.resource_id).first()
         if not resource:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ingredient {recipe_item.name} not found!")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ingredient {resource.item} not found!")
 
         if resource.amount < recipe_item.amount * order_amount:
             raise HTTPException(
