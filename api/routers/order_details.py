@@ -33,3 +33,11 @@ def update(item_id: int, request: schema.OrderDetailUpdate, db: Session = Depend
 @router.delete("/{item_id}")
 def delete(item_id: int, db: Session = Depends(get_db)):
     return controller.delete(db=db, item_id=item_id)
+
+@router.get("/food/{sandwich_id}/count")
+def get_food_order_count(sandwich_id: int, db: Session = Depends(get_db)):
+    return controller.count_food_orders(db, sandwich_id)  # Use the controller alias
+
+@router.get("/food/count")
+def get_all_food_order_counts(db: Session = Depends(get_db)):
+    return controller.count_all_food_orders(db)  # Use the controller alias
