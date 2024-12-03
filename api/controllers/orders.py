@@ -3,7 +3,7 @@ from fastapi import HTTPException, status, Response, Depends
 from ..models import orders as model
 from sqlalchemy.exc import SQLAlchemyError
 from ..models import resources as Resource, sandwiches as Sandwich
-from ..schemas import order_details as schema
+from ..schemas import orders as schema
 from datetime import datetime
 
 
