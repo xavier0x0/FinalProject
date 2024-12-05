@@ -37,5 +37,4 @@ class Order(OrderBase):
 
     class ConfigDict:
         from_attributes = True
-        #added with 1.8
-        orm_mode = True
+

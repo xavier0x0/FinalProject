@@ -29,4 +29,4 @@ class Payment(PaymentBase):
     payment_status: str  # e.g., "Pending", "Completed"
 
     class Config:
-        orm_mode = True
+        from_attributes = True
