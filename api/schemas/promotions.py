@@ -25,4 +25,4 @@ class Promotion(PromotionBase):
     menu_item_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
