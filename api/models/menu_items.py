@@ -14,3 +14,4 @@ class MenuItem(Base):
     description = Column(String(300))
     recipe_id = Column(Integer, ForeignKey("recipes.id"))
     ingredients = Column(String(1000))
+    reviews = relationship(relationship("Review"), back_populates="menu_item")
