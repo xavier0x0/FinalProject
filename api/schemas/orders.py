@@ -16,7 +16,7 @@ class OrderBase(BaseModel):
     @field_validator("order_type")
     @classmethod
     def validate_order_type(cls, v):
-        allowed_types = ["Takeout", "Delievery"]
+        allowed_types = ["Takeout", "Delivery"]
         if v not in allowed_types:
             raise ValueError(f"Invalid order type. Must be one of: {', '.join(allowed_types)}")
         return v
