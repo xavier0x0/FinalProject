@@ -12,6 +12,7 @@ class MenuItem(Base):
     calories = Column(Integer)
     name = Column(String(100))
     description = Column(String(300))
+    category = Column(String(50), nullable=True)  # Added category field for filtering
     recipe_id = Column(Integer, ForeignKey("recipes.id"))
     ingredients = Column(String(1000))
     reviews = relationship(relationship("Review"), back_populates="menu_item")

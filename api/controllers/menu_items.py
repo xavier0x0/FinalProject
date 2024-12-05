@@ -60,3 +60,12 @@ def delete_menu_item(db: Session, item_id: int):
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+def search_by_category(db: Session, category: str):
+    try:
+        items = db.query(menu_model.MenuItem).filter(menu_model.MenuItem.category.ilike(f"%{category}%")).all()
+        if not items:
+            raise HTTPException(status_code=404, detail=f"No menu items found for category '{category}'")
+        return items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
